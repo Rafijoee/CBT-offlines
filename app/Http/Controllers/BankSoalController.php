@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\bankSoal;
+use App\Models\Exams;
 use Illuminate\Http\Request;
 
 class BankSoalController extends Controller
@@ -18,9 +19,10 @@ class BankSoalController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create($examId)
     {
-        //
+        $exam = Exams::findOrFail($examId);
+        return view('bank-soal.create', compact('exam'));
     }
 
     /**

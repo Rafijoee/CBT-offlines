@@ -36,7 +36,7 @@ class ResultExamsController extends Controller
      */
     public function show(ResultExams $resultExams)
     {
-        //
+        
     }
 
     /**

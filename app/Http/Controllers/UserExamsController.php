@@ -2,63 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UserExams;
+use App\Models\Exams;
+use App\Models\UserExam;
 use Illuminate\Http\Request;
 
 class UserExamsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         //
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return view('user_exams.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(UserExams $userExams)
+    public function edit(Exams $exams)
+    {
+        // PAKAI exam_id (bukan exams_id)
+        dd($exams);
+        
+
+        return view('user_exams.edit', compact('userExam', 'exam'));
+    }
+
+    public function update(Request $request, UserExam $userExam)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(UserExams $userExams)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, UserExams $userExams)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(UserExams $userExams)
+    public function destroy(UserExam $userExam)
     {
         //
     }

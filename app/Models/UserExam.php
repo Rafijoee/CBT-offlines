@@ -23,7 +23,7 @@ class UserExam extends Model
 
     public function exam()
     {
-        return $this->belongsTo(Exam::class);
+        return $this->belongsTo(Exams::class);
     }
 
     public function userAnswers()

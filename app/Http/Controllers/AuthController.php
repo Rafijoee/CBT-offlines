@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Role;
+
 
 class AuthController extends Controller
 {
@@ -51,11 +53,12 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6|confirmed',
         ]);
-        $validate_data['roles_id'] = '2';
         
-        User::create($validate_data);
+        $validate_data['password'] = Hash::make($validate_data['password']);
+        $user = User::create($validate_data);
+        $user->assignRole('siswa');
 
-        return redirect('login');
+        return redirect('login',)->with('status', 'Registration successful. Please login.');
     }
 
     public function destroy(Request $request)
