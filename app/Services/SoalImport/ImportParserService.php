@@ -3,17 +3,22 @@
 namespace App\Services\SoalImport;
 
 use ZipArchive;
-use App\Models\ImportAnswer;
 use App\Models\ImportSession;
 use App\Models\ImportQuestion;
+use App\Models\ImportAnswer;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ImportParserService
 {
+    /**
+     * ENTRY POINT (dipanggil controller)
+     */
     public function handle($zipFile, $examId, $userId)
     {
-        // 1. Import session
+        /**
+         * 1. BUAT SESSION
+         */
         $session = ImportSession::create([
             'user_id' => $userId,
             'exam_id' => $examId,
@@ -21,99 +26,132 @@ class ImportParserService
             'original_file' => $zipFile->getClientOriginalName(),
         ]);
 
-        // 2. Extract ZIP (sementara, NON public)
+        /**
+         * 2. EXTRACT ZIP
+         */
         $extractPath = storage_path("app/imports/{$session->id}");
+
         if (!is_dir($extractPath)) {
             mkdir($extractPath, 0777, true);
         }
 
         $zip = new ZipArchive;
-        $zip->open($zipFile->getRealPath());
+        if ($zip->open($zipFile->getRealPath()) !== true) {
+            throw new \Exception('ZIP tidak bisa dibuka');
+        }
+
         $zip->extractTo($extractPath);
         $zip->close();
 
-        // 3. Excel
+        /**
+         * 3. AMBIL EXCEL
+         */
         $excelPath = collect(glob($extractPath.'/*.xlsx'))->first();
         if (!$excelPath) {
-            throw new \Exception('File Excel tidak ditemukan.');
+            throw new \Exception('Excel tidak ditemukan');
         }
 
         $spreadsheet = IOFactory::load($excelPath);
+
+        /**
+         * 4. PARSE QUESTIONS
+         */
         $questionSheet = $spreadsheet->getSheetByName('questions');
-        $rows = $questionSheet->toArray();
-        unset($rows[0]); // header
+        $questionRows  = $questionSheet->toArray(null, true, true, true);
+        array_shift($questionRows);
 
-        foreach ($rows as $index => $row) {
+        foreach ($questionRows as $row) {
 
-            // === PINDAHKAN GAMBAR SOAL KE PUBLIC ===
-            $questionImagePath = null;
-            if (!empty($row[2])) {
-                $questionImagePath = $this->moveToPublic(
-                    $extractPath.'/'.$row[2],
-                    "imports/{$session->id}"
-                );
-            }
+            $questionImage = $this->resolveImage(
+                $extractPath,
+                $row['C'] ?? null,
+                $session->id
+            );
 
             $question = ImportQuestion::create([
                 'import_session_id' => $session->id,
-                'question_text' => $row[1],
-                'question_image' => $questionImagePath,
-                'score' => $row[3] ?? 1,
-                'type' => $row[4] ?? 'PG',
-                'order_no' => $index,
+                'question_text' => trim($row['B']),
+                'question_image' => $questionImage,
+                'score' => (int) ($row['D'] ?? 1),
+                'type' => 'PG',
+                'order_no' => (int) $row['A'],
             ]);
 
-            if ($question->type === 'PG') {
-                $this->insertAnswers($spreadsheet, $question, $extractPath, $session->id);
-            }
+            $this->insertAnswers(
+                $spreadsheet,
+                $question,
+                $extractPath,
+                $session->id
+            );
         }
 
         return $session;
     }
 
+    /**
+     * PARSE ANSWERS
+     */
     protected function insertAnswers($spreadsheet, $question, $extractPath, $sessionId)
     {
         $sheet = $spreadsheet->getSheetByName('answers');
-        $rows = $sheet->toArray();
-        unset($rows[0]);
+        $rows  = $sheet->toArray(null, true, true, true);
+        array_shift($rows);
+
+        // dd([
+        //     'extractPath' => $extractPath,
+        //     'question_order' => $question->order_no,
+        //     'first_answer_row' => $rows[0],
+        // ]);
 
         foreach ($rows as $row) {
-            if ($row[0] == $question->order_no) {
 
-                // === PINDAHKAN GAMBAR JAWABAN ===
-                $answerImagePath = null;
-                if (!empty($row[3])) {
-                    $answerImagePath = $this->moveToPublic(
-                        $extractPath.'/'.$row[3],
-                        "imports/{$sessionId}"
-                    );
-                }
-
-                ImportAnswer::create([
-                    'import_question_id' => $question->id,
-                    'option_key' => $row[1],
-                    'answer_text' => $row[2],
-                    'answer_image' => $answerImagePath,
-                    'is_true' => strtoupper($row[4]) === 'TRUE',
-                ]);
+            if ((int) $row['A'] !== $question->order_no) {
+                continue;
             }
+
+            $answerImage = $this->resolveImage(
+                $extractPath,
+                $row['D'] ?? null,
+                $sessionId
+            );
+
+            ImportAnswer::create([
+                'import_question_id' => $question->id,
+                'option_key' => trim($row['B']),
+                'answer_text' => trim($row['C']),
+                'answer_image' => $answerImage,
+                'is_true' => strtoupper(trim($row['E'])) === 'TRUE',
+            ]);
         }
     }
 
-    protected function moveToPublic($sourcePath, $publicDir)
+    /**
+     * AMBIL GAMBAR DARI FOLDER images/
+     */
+    protected function resolveImage($extractPath, $filename, $sessionId)
     {
-        if (!file_exists($sourcePath)) {
+        if (!$filename) return null;
+
+        $filename = trim($filename);
+
+        if (!str_contains($filename, '.')) {
+            $filename .= '.png';
+        }
+
+        $possiblePath = $extractPath.'/images/'.$filename;
+
+        if (!file_exists($possiblePath)) {
             return null;
         }
 
-        $filename = basename($sourcePath);
-        $targetPath = $publicDir.'/'.$filename;
+        $targetPath = "imports/{$sessionId}/".$filename;
 
         Storage::disk('public')->put(
             $targetPath,
-            file_get_contents($sourcePath)
+            file_get_contents($possiblePath)
         );
 
-        return $targetPath; // SIMPAN RELATIVE PATH
+        return $targetPath;
     }
+
 }
