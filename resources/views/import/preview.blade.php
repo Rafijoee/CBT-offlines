@@ -48,7 +48,6 @@
                         {{-- JAWABAN --}}
                         <td class="border p-2">
                             {{ $a->answer_text }}
-                            {{-- @dd($a) --}}
                             @if ($a->answer_image)
                                     <img src="{{ asset('storage/'.$a->answer_image) }}"
                                         class="mt-2 max-w-xs rounded">

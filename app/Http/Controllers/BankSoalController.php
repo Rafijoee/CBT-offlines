@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\bankSoal;
 use App\Models\Exams;
+use App\Models\bankSoal;
+use App\Models\ImportAnswer;
+use App\Models\ImportQuestion;
 use Illuminate\Http\Request;
+use App\Models\ImportSession;
 
 class BankSoalController extends Controller
 {
@@ -22,7 +25,11 @@ class BankSoalController extends Controller
     public function create($examId)
     {
         $exam = Exams::findOrFail($examId);
-        return view('bank-soal.create', compact('exam'));
+        $questions = BankSoal::where('exams_id', $exam->id)->with('answers')->get();
+        $sessionsId = ImportSession::where('exam_id', $examId)->pluck('id')->toArray();
+        $importedQuestions = ImportQuestion::whereIn('import_session_id', $sessionsId)->with('answers')->get();
+
+        return view('bank-soal.create', compact('exam', 'questions', 'importedQuestions'));
     }
 
     /**
