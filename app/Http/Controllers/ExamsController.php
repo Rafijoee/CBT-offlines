@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Exams;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ExamsController extends Controller
 {
@@ -12,8 +13,7 @@ class ExamsController extends Controller
      */
     public function index()
     {
-        $exams = Exams::all();
-        return view ('exams.index', compact('exams'));
+
     }
 
     /**
@@ -21,7 +21,6 @@ class ExamsController extends Controller
      */
     public function create()
     {
-        return view ('exams.create');
     }
 
     /**
@@ -36,10 +35,11 @@ class ExamsController extends Controller
             'opened_time' => 'required|date',
             'closed_time' => 'required|date',
         ]);
+        $validate_data['token'] = strtoupper(Str::random(6));
+        
+        Exams::create($validate_data);
 
-        $validate_data = Exams::create($validate_data);
-
-        return redirect ('exams')->with('status', 'Exam created successfully!');
+        return redirect ('dashboard-guru')->with('status', 'Exam created successfully!');
     }
 
     /**
@@ -55,7 +55,7 @@ class ExamsController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        
     }
 
     /**
@@ -65,13 +65,6 @@ class ExamsController extends Controller
     {
         //
     }
-    public function check (Request $request, Exams $exams)
-    {
-        $soal = $exams->soal;
-
-
-        return redirect ('exams')->with('status', 'Exam created successfully!');
-    }
 
     /**
      * Remove the specified resource from storage.
@@ -79,5 +72,13 @@ class ExamsController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function generateToken(Exams $exams)
+    {
+        $exams->token = strtoupper(Str::random(6));
+        $exams->save();
+
+        return redirect()->back()->with('status', 'Token generated successfully!'); 
     }
 }

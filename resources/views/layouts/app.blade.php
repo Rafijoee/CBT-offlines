@@ -8,18 +8,20 @@
 
     @stack('styles')
 </head>
-<body class="bg-gray-100">
+<body class="min-h-screen bg-[#EAF3FF] bg-[radial-gradient(#bcd9ff_1px,transparent_1px)] [background-size:20px_20px] p-6">
 
-    @include('partials.navbar')
+    <div
+        class="min-h-screen bg-cover bg-center bg-no-repeat"
+        style="background-image: url('{{ asset('storage/images/background.png') }}');"
+    >
+        @include('partials.navbar')
 
-    <div class="flex">
-        @include('partials.sidebar')
-
-        <main class="flex-1 p-6">
-            @yield('content')
-        </main>
+            <main class="flex-1 py-6 sm:px-6 lg:px-10 px-4">
+                    @yield('content')
+                </div>
+            </main>
+        </div>
     </div>
-
-    @stack('scripts')
 </body>
+
 </html>

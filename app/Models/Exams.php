@@ -11,6 +11,9 @@ class Exams extends Model
         'soal',
         'time',
         'opened_time',
+        'closed_time',
+        'token',
+        'kelas',
     ];
 
     public function bankSoals()

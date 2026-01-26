@@ -44,91 +44,88 @@
     </div>
 
     {{-- TABLE LIST SOAL --}}
-    <div class="bg-white rounded shadow overflow-x-auto">
-        <table class="w-full text-sm">
-    <thead class="bg-gray-100">
-        <tr>
-            <th rowspan="2" class="border p-2 text-left w-1/4">
-                Soal
-            </th>
-            <th colspan="3" class="border p-2 text-center">
-                Jawaban
-            </th>
-        </tr>
-        <tr>
-            <th class="border p-2 text-left w-1/8">
-                Opsi
-            </th>
-            <th class="border p-2 text-left w-1/4">
-                Isi Jawaban
-            </th>
-            <th class="border p-2 text-center w-1/8">
-                Kunci
-            </th>
-        </tr>
-    </thead>
+    <h1 class="text-xl font-bold mb-4">
+    Preview Soal Import ({{ $importedQuestions->count() }})
+    </h1>
 
+<div class="overflow-x-auto border rounded">
+    <table class="min-w-full text-sm border-collapse">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="border p-2 text-left w-1/4">Soal</th>
+                <th class="border p-2 text-center w-1/12">Opsi</th>
+                <th class="border p-2 text-left w-1/4">Jawaban</th>
+                <th class="border p-2 text-left w-1/4">Gambar Jawaban</th>
+                <th class="border p-2 text-center w-1/12">Kunci</th>
+            </tr>
+        </thead>
 
-            <tbody>
-                @forelse ($questions as $index => $question)
-                <tr class="border-t">
-                    <td class="px-4 py-2">
-                        {{ $index + 1 }}
+        <tbody>
+        @forelse ($importedQuestions as $q)
+
+            @foreach ($q->answers as $index => $a)
+                <tr class="align-top">
+
+                    {{-- SOAL (rowspan) --}}
+                    @if ($index === 0)
+                        <td class="border p-2 whitespace-pre-line"
+                            rowspan="{{ $q->answers->count() }}">
+                            <div class="font-semibold">
+                                {{ $q->question_text }}
+                            </div>
+
+                            @if ($q->question_image)
+                                <img
+                                    src="{{ asset('storage/'.$q->question_image) }}"
+                                    class="mt-2 max-w-xs rounded border"
+                                >
+                            @endif
+                        </td>
+                    @endif
+
+                    {{-- OPSI --}}
+                    <td class="border p-2 text-center font-bold">
+                        {{ $a->option_key }}
                     </td>
 
-                    <td class="px-4 py-2">
-                        <div class="font-medium">
-                            {{ Str::limit($question->question_text, 80) }}
-                        </div>
+                    {{-- JAWABAN --}}
+                    <td class="border p-2">
+                        {{ $a->answer_text }}
+                    </td>
 
-                        @if ($question->question_image)
+                    {{-- GAMBAR JAWABAN --}}
+                    <td class="border p-2">
+                        @if ($a->answer_image)
                             <img
-                                src="{{ asset('storage/'.$question->question_image) }}"
-                                class="mt-2 w-32 rounded"
+                                src="{{ asset('storage/'.$a->answer_image) }}"
+                                class="max-w-xs rounded border"
                             >
+                        @else
+                            <span class="text-gray-400 italic">Tidak ada</span>
                         @endif
                     </td>
 
-                    <td class="px-4 py-2">
-                        <span class="px-2 py-1 text-xs rounded
-                            {{ $question->source === 'import' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700' }}">
-                            {{ ucfirst($question->source) }}
-                        </span>
+                    {{-- KUNCI --}}
+                    <td class="border p-2 text-center">
+                        @if ($a->is_true)
+                            ✅
+                        @endif
                     </td>
 
-                    <td class="px-4 py-2 text-center">
-                        <div class="flex justify-center gap-2">
-                            {{-- Edit --}}
-                            <a
-                                href="{{ route('teacher.questions.edit', $question) }}"
-                                class="px-3 py-1 bg-yellow-500 text-white rounded text-xs">
-                                Edit
-                            </a>
+                </tr>
+            @endforeach
 
-                            {{-- Delete --}}
-                            <form
-                                method="POST"
-                                action="{{ route('teacher.questions.destroy', $question) }}"
-                                onsubmit="return confirm('Hapus soal ini?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="px-3 py-1 bg-red-600 text-white rounded text-xs">
-                                    Hapus
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="4" class="text-center py-6 text-gray-500">
-                        Belum ada soal
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+        @empty
+            <tr>
+                <td colspan="5" class="p-4 text-center text-gray-500">
+                    Belum ada soal hasil import
+                </td>
+            </tr>
+        @endforelse
+        </tbody>
+    </table>
+</div>
+
 
     {{-- SUBMIT --}}
     <div class="flex justify-end mt-6">

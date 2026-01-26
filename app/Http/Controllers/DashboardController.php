@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Exams;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -11,16 +13,13 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        return view ('dashboard.index');
+        $user = Auth::user();
+        $kealas = $user->kelas;
+        $exams = Exams::where('kelas', $kealas)->get();
+        return view('dashboard.siswa', compact('exams'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+
 
     /**
      * Store a newly created resource in storage.

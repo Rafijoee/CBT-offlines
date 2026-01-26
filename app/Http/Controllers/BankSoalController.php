@@ -28,6 +28,7 @@ class BankSoalController extends Controller
         $questions = BankSoal::where('exams_id', $exam->id)->with('answers')->get();
         $sessionsId = ImportSession::where('exam_id', $examId)->pluck('id')->toArray();
         $importedQuestions = ImportQuestion::whereIn('import_session_id', $sessionsId)->with('answers')->get();
+        // dd($importedQuestions);
 
         return view('bank-soal.create', compact('exam', 'questions', 'importedQuestions'));
     }
