@@ -29,17 +29,12 @@ Route::post('/create-exams', [ExamsController::class, 'store'])->name('store-exa
 Route::patch('/refresh-token/{exams}', [ExamsController::class, 'generateToken'])->name('generate-token');
 
 //Bank Soal
-Route::get('/create-bank-soal', [BankSoalController::class, 'create'])->name('create-bank-soal');
+Route::get('/create-bank-soal/{exams}', [BankSoalController::class, 'create'])->name('create-bank-soal');
 
 //User Exams
 Route::get('/create-user-exams', [UserExamsController::class, 'create'])->name('create-user-exams');
 Route::post('/create-user-exams', [UserExamsController::class, 'store'])->name('store-user-exams');
 Route::get('/create-user-exams/{exams}', [UserExamsController::class, 'edit']);
-
-
-
-
-
 
 Route::get('/exams/{id}/questions/create', [BankSoalController::class, 'create'])->name('create-question');
 Route::post('/import/upload', [ImportSoalController::class, 'upload'])

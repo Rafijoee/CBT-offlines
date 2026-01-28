@@ -16,7 +16,8 @@ public function upload(Request $request)
     ]);
     $session = app(ImportParserService::class)
         ->handle($request->file('file'), $request->exam_id, auth()->id());
-    return redirect()->route('create-question', $examId);
+    return redirect()->route('create-question', $examId)
+        ->with('success', 'Soal berhasil ditambahkan !');
 }
 
 }

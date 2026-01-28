@@ -110,15 +110,17 @@
                         </td>
 
                         <!-- AKSI -->
-                        <td class="p-4 flex justify-center gap-3">
-                            <form action="{{ route('generate-token', $exam) }}" method="POST">
-                                @csrf
-                                @method('PATCH')
-                                <input type="text" name="name" value="Nama Baru">
-                                <button class="text-red-500" type="submit">🔄</button>
-                            </form>
-                            <button class="text-blue-500">✏️</button>
-                            <button class="text-red-500">🗑️</button>
+                        <td class="p-4 text-center">
+                            <div class="flex justify-center gap-3">
+                                <form action="{{ route('generate-token', $exam) }}" method="POST">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button class="text-blue-500 hover:text-blue-700" type="submit">🔄</button>
+                                </form>
+
+                                <button class="text-yellow-500 hover:text-yellow-600">✏️</button>
+                                <button class="text-red-500 hover:text-red-600">🗑️</button>
+                            </div>
                         </td>
                     </tr>
                     @endforeach
