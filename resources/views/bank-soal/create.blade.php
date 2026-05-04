@@ -4,6 +4,36 @@
 
 @section('content')
 <div class="max-w-8xl mx-auto space-y-6">
+@if ($errors->any())
+<div id="error-alert" class="flex items-start p-4 mb-6 text-red-800 rounded-2xl bg-red-50 border border-red-100 shadow-sm animate-fade-in-down" role="alert">
+    <!-- Ikon Error -->
+    <div class="inline-flex items-center justify-center flex-shrink-0 w-10 h-10 text-red-500 bg-white rounded-xl shadow-sm">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+    </div>
+
+    <!-- Konten Pesan -->
+    <div class="ml-4 text-sm font-medium flex-1">
+        <span class="font-bold text-red-900 block mb-1">Terjadi Kesalahan!</span>
+        <ul class="list-disc list-inside space-y-1 text-red-700">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+
+    <!-- Tombol Tutup -->
+    <button type="button" onclick="document.getElementById('error-alert').remove()" class="ml-auto -mx-1.5 bg-red-50 text-red-500 rounded-lg focus:ring-2 focus:ring-red-400 p-1.5 hover:bg-red-100 inline-flex h-8 w-8 transition-colors">
+        <span class="sr-only">Close</span>
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+        </svg>
+    </button>
+</div>
+@endif
+
+
 @if (session('success'))
 <div id="success-alert" class="flex items-center p-4 mb-6 text-emerald-800 rounded-2xl bg-emerald-50 border border-emerald-100 shadow-sm animate-fade-in-down" role="alert">
     <div class="inline-flex items-center justify-center flex-shrink-0 w-10 h-10 text-emerald-500 bg-white rounded-xl shadow-sm">
@@ -150,7 +180,7 @@
                             onsubmit="return confirm('Yakin ingin menghapus soal ini?')"
                         >
                             @csrf
-                            @method('DELETE')
+                            {{-- @method('DELETE') --}}
                             <button
                                 type="submit"
                                 class="text-red-600 hover:text-red-800 text-lg"
@@ -178,7 +208,7 @@
 
     {{-- SUBMIT --}}
     <div class="flex justify-end">
-        <form method="POST" action="">
+        <form method="POST" action="{{ route('submit-bank-soal', $exam->id) }}">
             {{-- route submit final --}}
             @csrf
             <button class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">
@@ -269,7 +299,7 @@
 <dialog id="manualModal" class="rounded-2xl p-0 ml-[510px] backdrop:bg-black/50 shadow-2xl">
     <form
         method="POST"
-        action=""
+        action="{{ route('store-manual-bank-soal', ['exams' => $exam->id]) }}"
         enctype="multipart/form-data"
         class="bg-white max-w-3xl w-full rounded-2xl p-6 relative"
     >

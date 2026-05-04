@@ -21,7 +21,7 @@ class BankSoal extends Model
 
     public function answers()
     {
-        return $this->hasMany(Answer::class);
+    return $this->hasMany(Answer::class, 'bank_soal_id', 'id');
     }
 
     public function userAnswers()

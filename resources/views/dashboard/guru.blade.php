@@ -11,16 +11,21 @@
             <img src="{{ asset('storage/images/list.png') }}" class="w-6 h-6">
             Daftar Ujian
         </h2>
+        <div>
 
+            <form action="{{ route('exam.import.zip') }}" method="POST" enctype="multipart/form-data" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm text-center inline-block">
+                @csrf
+                <input type="file" name="file" required>
+                <button type="submit">Import Exam</button>
+
+            </form>
+        </div>
+            
         <div class="flex gap-3">
             <button
                 @click="openModal = true"
                 class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm">
                 ➕ Buat Ujian
-            </button>
-
-            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">
-                🔄 Sinkronisasi
             </button>
 
             <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm">
@@ -35,7 +40,7 @@
 
             <table class="w-full text-sm">
                 <thead class="bg-[#06D6A0] text-white">
-                    <tr>
+                    <tr >
                         <th class="p-4 text-left">No</th>
                         <th class="p-4 text-left">Mata Pelajaran</th>
                         <th class="p-4 text-left">Kelas</th>
@@ -49,7 +54,14 @@
 
                 <tbody class="divide-y">
                     @foreach ($exams as $index => $exam)
-                    <tr>
+                    @if($exam->offline_mode)
+
+                    <tr onclick="window.location='{{ route('bank-soal.preview', $exam->id) }}'" 
+                        class="hover:bg-gray-50 cursor-pointer transition-colors">
+                    @else
+                    <tr onclick="window.location='{{ route('create-bank-soal', $exam->id) }}'" 
+                        class="hover:bg-gray-50 cursor-pointer transition-colors">
+                    @endif
                         <td class="p-4">{{ $index + 1 }}</td>
 
                         <td class="p-4 font-semibold">
@@ -115,11 +127,18 @@
                                 <form action="{{ route('generate-token', $exam) }}" method="POST">
                                     @csrf
                                     @method('PATCH')
-                                    <button class="text-blue-500 hover:text-blue-700" type="submit">🔄</button>
+                                    <button class="text-blue-500 hover:text-blue-700 cursor-pointer" type="submit">🔄Refresh</button>
                                 </form>
 
-                                <button class="text-yellow-500 hover:text-yellow-600">✏️</button>
-                                <button class="text-red-500 hover:text-red-600">🗑️</button>
+                                <button class="text-yellow-500 hover:text-yellow-600 cursor-pointer">✏️Edit</button>
+                                <form action="{{ route('delete-exams', $exam->id) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="text-red-500 hover:text-red-600 cursor-pointer" type="submit">🗑️Hapus</button>
+                                </form>
+                                <a href="{{ route('exam.download', $exam->id) }}" class="btn btn-success">
+                                    Download Paket
+                                </a>
                             </div>
                         </td>
                     </tr>

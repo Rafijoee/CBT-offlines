@@ -14,6 +14,7 @@ class Exams extends Model
         'closed_time',
         'token',
         'kelas',
+        'offline_mode',
     ];
 
     public function bankSoals()
@@ -23,7 +24,7 @@ class Exams extends Model
 
     public function userExams()
     {
-        return $this->hasMany(UserExam::class);
+        return $this->hasMany(UserExam::class, 'exam_id');
     }
 }
 

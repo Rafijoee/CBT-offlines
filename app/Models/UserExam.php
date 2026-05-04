@@ -9,7 +9,8 @@ class UserExam extends Model
     protected $fillable = [
         'user_id',
         'exam_id',
-        'soal_array',
+        'skor',
+        'status',
     ];
 
     protected $casts = [
@@ -35,4 +36,5 @@ class UserExam extends Model
     {
         return $this->hasOne(ResultExam::class);
     }
+    
 }

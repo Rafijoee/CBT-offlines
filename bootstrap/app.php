@@ -10,8 +10,10 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        //
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->alias([
+            'check.exam' => \App\Http\Middleware\CheckExamStatus::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

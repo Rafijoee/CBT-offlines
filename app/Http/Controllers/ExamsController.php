@@ -32,6 +32,7 @@ class ExamsController extends Controller
             'mapel' => 'required',
             'soal' => 'required',
             'time' => 'required|integer',
+            'kelas' => 'required',
             'opened_time' => 'required|date',
             'closed_time' => 'required|date',
         ]);
@@ -71,7 +72,10 @@ class ExamsController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $exam = Exams::findOrFail($id);
+        $exam->delete();
+
+        return redirect()->back()->with('status', 'Exam deleted successfully!');
     }
 
     public function generateToken(Exams $exams)
@@ -81,4 +85,5 @@ class ExamsController extends Controller
 
         return redirect()->back()->with('status', 'Token generated successfully!'); 
     }
+    
 }
