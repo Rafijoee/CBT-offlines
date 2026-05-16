@@ -28,9 +28,9 @@
                 ➕ Buat Ujian
             </button>
 
-            <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm">
+            <a href="{{ route('nilai.index') }}" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm">
                 📊 Lihat Nilai
-            </button>
+            </a>
         </div>
     </div>
 

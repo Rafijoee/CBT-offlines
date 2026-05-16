@@ -87,6 +87,48 @@
     <h2 class="text-xl font-bold mb-4">
         Hasil Ujian Siswa
     </h2>
+<div class="flex items-center justify-between mb-4">
+
+    {{-- BUTTON SYNC --}}
+    <form action="{{ route('sync.server') }}" method="POST">
+        @csrf
+
+        <button
+            type="submit"
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl shadow"
+        >
+            🔄 Sinkronkan Nilai
+        </button>
+    </form>
+
+    {{-- DOWNLOAD --}}
+    <div class="relative">
+        <button
+            class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl shadow"
+            type="button"
+            onclick="document.getElementById('downloadMenu').classList.toggle('hidden')"
+        >
+            ⬇️ Download
+        </button>
+
+        <div id="downloadMenu"
+             class="hidden absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border z-50">
+
+            <a href="{{ route('nilai.download-result', request()->all() + ['type' => 'pdf']) }}"
+               class="block px-4 py-3 hover:bg-gray-100">
+                📄 Download PDF
+            </a>
+
+            <a href="{{ route('nilai.download-result', request()->all() + ['type' => 'csv']) }}"
+               class="block px-4 py-3 hover:bg-gray-100">
+                📊 Download CSV
+            </a>
+
+        </div>
+    </div>
+
+</div>
+
 
 
     <div class="overflow-x-auto">
@@ -114,7 +156,7 @@
                         </span>
                     </td>
                     <td class="p-3 text-center flex justify-center gap-3">
-                        <a href="" class="text-blue-600 hover:text-blue-800">
+                        <a href="{{ route('exam.detail', $item->id) }}" class="text-blue-600 hover:text-blue-800">
                             🔍 Detail
                         </a>
                         <button class="text-red-500 hover:text-red-700">

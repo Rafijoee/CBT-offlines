@@ -79,6 +79,12 @@ Route::get('/import/{session}/preview', [ImportPreviewController::class, 'show']
 //nilai-guru
 Route::get('/nilai', [NilaiController::class, 'index'])->name('nilai.index');
 Route::get('/exam/{userExam}/detail', [NilaiController::class, 'detail'])->name('exam.detail');
+Route::get('/nilai/download-result', [NilaiController::class, 'downloadResult'])
+    ->name('nilai.download-result');
+Route::post('/sync/user-exam', [NilaiController::class, 'syncUserExam']);
+Route::post('/sync-server', [NilaiController::class, 'syncToServer'])
+    ->name('sync.server');
+
 
 Route::post('/import/{session}/finalize', function ($sessionId) {
     return "FINALIZE LOGIC HERE";

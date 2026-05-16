@@ -21,7 +21,7 @@
                 ⚑ Tandai Ragu
             </button>
 
-            <form action="{{ route('exam.finish', $userExam->id) }}" method="POST">
+            <form id= "finishForm" action="{{ route('exam.finish', $userExam->id) }}" method="POST">
                 @csrf
                 <button type="submit"
                     class="bg-red-500 px-4 py-2 rounded-xl font-semibold text-white hover:bg-red-600">
@@ -145,188 +145,194 @@
     </div>
 </div>
 
-
 <script>
-    const duration = {{ $exams->time }}; // menit
-const startedAt = new Date("{{ optional($userExam->started_at)->toIso8601String() ?? now()->toIso8601String() }}").getTime();    const endTime = startedAt + (duration * 60 * 1000);
+/**
+ * =========================
+ * 1. GLOBAL INIT
+ * =========================
+ */
+let isFinishing = false;
+const duration = {{ $exams->time }};
+const startedAt = new Date("{{ optional($userExam->started_at)->toIso8601String() ?? now()->toIso8601String() }}").getTime();
+const endTime = startedAt + (duration * 60 * 1000);
 
-
-document.addEventListener("DOMContentLoaded", function() {
-
-    const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    const form = document.getElementById('answerForm');
+const userExamId = "{{ $userExam->id }}";
+const examId = "{{ $exams->id }}";
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
 let isExamActive = true;
+let wasFullscreen = false;
+let isNavigating = false; // 🔥 penting (fix bug pindah soal)
 
-function kickUser() {
+/**
+ * =========================
+ * 2. ANTI CHEAT
+ * =========================
+ */
+function kickUser(reason = "Pelanggaran sistem") {
     if (!isExamActive) return;
     isExamActive = false;
 
-    // Ambil data langsung dari variabel Blade
-    const userId = "{{ auth()->user()->id }}";
-    const examId = "{{ $userExam->exam_id }}"; // ✅ BENAR
-    fetch('/exam/violation', {
+    console.log("Kicking user:", reason);
+
+    fetch('{{ route("exam.reportViolation") }}', {
         method: 'POST',
         headers: {
-            "X-CSRF-TOKEN": csrf,
+            "X-CSRF-TOKEN": csrfToken,
             "Content-Type": "application/json",
             "Accept": "application/json"
         },
         body: JSON.stringify({
-            exam_id: examId,
-            user_id: userId,
+            user_exam_id: userExamId,
             status: "is_blocked",
-            reason: "Mencoba pindah tab atau keluar fullscreen"
+            reason: reason
         })
     })
-    .then(response => {
-            window.location.href = `/exam/blocked/${examId}`;
-        })
-        .catch(err => {
-            window.location.href = `/exam/blocked/${examId}`;
-        });
+    .finally(() => {
+        window.location.href = `/exam/blocked/${examId}`;
+    });
 }
 
-// pindah tab / minimize
+// pindah tab
 document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-        kickUser();
+    if (document.hidden && isExamActive && !isNavigating) {
+        kickUser("Pindah tab / minimize");
     }
 });
 
-// keluar fullscreen
+// fullscreen
 document.addEventListener("fullscreenchange", () => {
-    if (!document.fullscreenElement) {
-        kickUser();
+    if (document.fullscreenElement) {
+        wasFullscreen = true;
+    } else {
+        if (wasFullscreen && isExamActive && !isNavigating) {
+            kickUser("Keluar fullscreen");
+        }
     }
 });
 
-// multi tab
-if (localStorage.getItem("exam_open")) {
-    kickUser();
-} else {
-    localStorage.setItem("exam_open", true);
-}
+// 🔥 MULTI TAB FIX (tidak false trigger lagi)
+// setTimeout(() => {
+//     if (sessionStorage.getItem("exam_running")) {
+//         kickUser("Multi tab terdeteksi");
+//     } else {
+//         sessionStorage.setItem("exam_running", "true");
+//     }
+// }, 100);
 
+// hapus hanya kalau pindah soal
 window.addEventListener("beforeunload", () => {
-    localStorage.removeItem("exam_open");
+    if (isNavigating) {
+        sessionStorage.removeItem("exam_running");
+    }
 });
 
-// =====================
-// 🔐 ANTI CHEAT END
-// =====================
+/**
+ * =========================
+ * 3. DOM READY (FORM & NAV)
+ * =========================
+ */
+document.addEventListener("DOMContentLoaded", function() {
+    const form = document.getElementById('answerForm');
 
     async function saveAnswer() {
+        if (!form) return;
+
         const formData = new FormData(form);
 
         try {
-            const response = await fetch("{{ route('exam.save') }}", {
+            await fetch("{{ route('exam.save') }}", {
                 method: "POST",
                 headers: {
-                    "X-CSRF-TOKEN": csrf,
+                    "X-CSRF-TOKEN": csrfToken,
                     "Accept": "application/json"
                 },
-                credentials: "same-origin",
                 body: formData
             });
-
-            const result = await response.json();
-            console.log("SAVE SUCCESS:", result);
         } catch (error) {
-            console.error("SAVE ERROR:", error);
+            console.error("Save error:", error);
         }
     }
 
-    function updateSidebarColor() {
-        const soalId = document.querySelector('input[name="bank_soal_id"]').value;
-        const selected = document.querySelector('input[name="answer_id"]:checked');
-        const ragu = document.getElementById('raguInput').value;
+    // 🔥 NAVIGASI (fix utama)
+    window.navigateSoal = async function(id) {
+        isNavigating = true;
+        await saveAnswer();
 
-        const btn = document.getElementById('btn-' + soalId);
+        window.location.href =
+            "{{ route('exam.show', ['exams' => $exams->id, 'bankSoal' => 'ID']) }}"
+            .replace('ID', id);
+    };
 
-        btn.classList.remove('bg-gray-200','bg-green-500','bg-yellow-400','text-white');
-
-        if (!selected && ragu == 0) {
-            btn.classList.add('bg-gray-200');
-        } 
-        else if (ragu == 1) {
-            btn.classList.add('bg-yellow-400');
-        } 
-        else {
-            btn.classList.add('bg-green-500','text-white');
-        }
-    }
-
+    // radio click
     document.querySelectorAll('.answer-radio').forEach(radio => {
         radio.addEventListener('change', async function() {
 
             document.querySelectorAll('.answer-option').forEach(label => {
-                label.classList.remove(
-                    'border-blue-500',
-                    'bg-blue-100',
-                    'ring-2',
-                    'ring-blue-300'
-                );
+                label.classList.remove('border-blue-500','bg-blue-100','ring-2','ring-blue-300');
                 label.classList.add('hover:bg-blue-50');
             });
 
-            const selectedLabel = this.closest('.answer-option');
-
-            selectedLabel.classList.remove('hover:bg-blue-50');
-            selectedLabel.classList.add(
-                'border-blue-500',
-                'bg-blue-100',
-                'ring-2',
-                'ring-blue-300'
+            this.closest('.answer-option').classList.add(
+                'border-blue-500','bg-blue-100','ring-2','ring-blue-300'
             );
 
             await saveAnswer();
-            updateSidebarColor();
         });
     });
 
-    document.getElementById('markBtn').addEventListener('click', async () => {
-        let raguInput = document.getElementById('raguInput');
-        raguInput.value = raguInput.value == 1 ? 0 : 1;
+    // tombol ragu
+    const markBtn = document.getElementById('markBtn');
+    if (markBtn) {
+        markBtn.addEventListener('click', async () => {
+            let raguInput = document.getElementById('raguInput');
+            raguInput.value = raguInput.value == 1 ? 0 : 1;
 
-        await saveAnswer();
-        updateSidebarColor();
-    });
-
-    async function navigate(id) {
-        await saveAnswer();
-        window.location.href =
-            "{{ route('exam.show', ['exams' => $exams->id, 'bankSoal' => 'ID']) }}"
-            .replace('ID', id);
+            await saveAnswer();
+        });
     }
 
+    // tombol navigasi
     document.querySelectorAll('.nextBtn, .prevBtn, .number-btn')
         .forEach(btn => {
             btn.addEventListener('click', function() {
-                navigate(this.dataset.id);
+                const id = this.dataset.id;
+                if (id) navigateSoal(id);
             });
         });
-
 });
 
-
-// =====================
-// ⏱ TIMER START
-// =====================
-function startTimer(endTime) {
+/**
+ * =========================
+ * 4. TIMER
+ * =========================
+ */
+function startTimer(targetEndTime) {
     const timerEl = document.getElementById('timer');
+    if (!timerEl) return;
 
     const interval = setInterval(() => {
         const now = new Date().getTime();
-        const distance = endTime - now;
+        const distance = targetEndTime - now;
 
         if (distance <= 0) {
+
+            isFinishing = true; // 🔥 penting
+            isExamActive = false;
+
             clearInterval(interval);
             timerEl.innerHTML = "00:00";
 
-            // auto submit
-            const finishForm = document.querySelector('form[action*="exam.finish"]');
-            if (finishForm) finishForm.submit();
+            // 🔥 AUTO SUBMIT (AMAN)
+            fetch("{{ route('exam.finish', $userExam->id) }}", {
+                method: "POST",
+                headers: {
+                    "X-CSRF-TOKEN": csrfToken,
+                    "Accept": "application/json"
+                }
+            }).then(() => {
+                window.location.href = "{{ route('exam.hasil', $userExam->id) }}";
+            });
 
             return;
         }
@@ -338,18 +344,13 @@ function startTimer(endTime) {
             `${minutes.toString().padStart(2,'0')}:` +
             `${seconds.toString().padStart(2,'0')}`;
 
-        // 🔴 warning kalau sisa < 5 menit
         if (distance < 5 * 60 * 1000) {
-            timerEl.classList.add('text-red-700', 'animate-pulse');
+            timerEl.classList.add('text-red-700','animate-pulse');
         }
 
     }, 1000);
 }
 
-// jalankan timer
+// jalanin timer
 startTimer(endTime);
-// =====================
-// ⏱ TIMER END
-// =====================
-
 </script>

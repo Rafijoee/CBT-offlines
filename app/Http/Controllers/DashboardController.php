@@ -15,17 +15,15 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $kealas = $user->kelas;
-        $exams = Exams::where('kelas', $kealas)->get();
+        $kelas = $user->kelas;
         $idCurrent = UserExam::where('user_id', $user->id)->where('status', 'ongoing')->pluck('exam_id')->toArray();
         $idFinish = UserExam::where('user_id', $user->id)->where('status', 'finished')->pluck('exam_id')->toArray();
         $excludedIds = array_merge($idCurrent, $idFinish);
         // dd($exams, $idCurrent, $idFinish, $excludedIds);
 
+        $exams = Exams::where('kelas', $kelas)->whereNotIn('id', $excludedIds)->get();
         $currents = Exams::whereIn('id', $idCurrent)->get();
-        $finishs = Exams::whereIn('id', $idFinish)->with('userExams')->get();
-        $exams = Exams::whereNotIn('id', $excludedIds)->where('kelas', $kealas)->where('opened_time', '<=', now())->get();
-        // dd($currents);
+        $finishs = Exams::whereIn('id', $idFinish)->get();
         return view('dashboard.siswa', compact('exams', 'currents', 'finishs', 'exams' ));
     }
 

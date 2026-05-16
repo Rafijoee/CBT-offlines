@@ -160,12 +160,11 @@
                             </span>
                         </div>
 
-                        <a href="{{ route('exam.hasil', ['userExam' => $finish->id]) }}"
+                        <a href="{{ route('exam.finish', ['userExam' => $finish->id]) }}"
                         class="bg-[#C6F7D0] hover:bg-[#b0f2bd] text-[#42AD62] px-5 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
                             Lihat Hasil
                         </a>
                     </div>
-
                 </div>
             @endforeach
         </div>

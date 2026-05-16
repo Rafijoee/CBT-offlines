@@ -91,7 +91,7 @@ public function resetStatus(Request $request, $id)
         UserExam::where('exam_id', $id)->where('user_id', auth()->id())->update(['status' => 'ongoing']);
     return redirect()->route('exam.masuk', ['exams' => $id]);
     } else {
-        return response()->json(['message' => 'invalid']);
+        return redirect()->route('exam.blocked', ['id' => $id])->with('error', 'Kode yang Anda masukkan salah!');
     }
 }
 

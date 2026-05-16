@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Exams extends Model
 {
@@ -26,5 +27,15 @@ class Exams extends Model
     {
         return $this->hasMany(UserExam::class, 'exam_id');
     }
+    protected static function booted()
+{
+    static::creating(function ($exam) {
+
+        if (!$exam->uuid) {
+            $exam->uuid = Str::uuid();
+        }
+
+    });
+}
 }
 

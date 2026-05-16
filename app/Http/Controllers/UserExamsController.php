@@ -19,45 +19,58 @@ class UserExamsController extends Controller
 {
 public function reportViolation(Request $request)
 {
-    // Log data untuk memastikan request masuk (Cek storage/logs/laravel.log)
-    Log::info('Pelanggaran Ujian:', $request->all());
-
-    // Validasi input
     $request->validate([
-        'exam_id' => 'required|exists:user_exams,id',
-        'status'  => 'required|string',
-        'reason'  => 'required|string'
+        'user_exam_id' => 'required|exists:user_exams,id',
+        'status'       => 'required|string',
+        'reason'       => 'required|string'
     ]);
 
-    try {
-        // Cari data berdasarkan ID yang dikirim
-        $userExam = UserExam::findOrFail($request->exam_id);
+    $userExam = UserExam::findOrFail($request->user_exam_id);
+    $userExam->update([
+        'status' => $request->status,
+        // Optional: simpan alasan di kolom catatan jika ada
+    ]);
 
-        // Update kolom status dan simpan alasan (jika ada kolom alasan, jika tidak abaikan)
-        $userExam->update([
-            'status' => $request->status,
-            // 'keterangan' => $request->reason // Jika ada kolom keterangan pelanggaran
-        ]);
-
-        return response()->json(['success' => true]);
-    } catch (\Exception $e) {
-        Log::error('Gagal update pelanggaran: ' . $e->getMessage());
-        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
-    }
+    return response()->json(['success' => true]);
 }
     public function masuk(Exams $exams)
     {
-        if(UserExam::where('user_id', auth()->id())->where('exam_id', $exams->id)->where('status', 'is_blocked')->exists()) {
-            return redirect()->route('exam.blocked', ['id' => $exams->id]);        }
+        $userId = auth()->id();
+
+        // ❌ kalau diblokir
+        if (UserExam::where('user_id', $userId)
+            ->where('exam_id', $exams->id)
+            ->where('status', 'is_blocked')
+            ->exists()) {
+
+            return redirect()->route('exam.blocked', ['id' => $exams->id]);
+        }
+
+        // ambil / buat data
         $userExam = UserExam::firstOrCreate(
             [
-                'user_id' => auth()->id(),
-                'exam_id' => $exams->id
+                'user_id' => $userId,
+                'exam_id' => $exams->id,
+                'exam_uuid' => $exams->uuid
             ],
+            [
+                'status' => 'ongoing'
+            ]
         );
-    if ($userExam->status === 'finished') {
-        return redirect()->route('exam.hasil', $userExam->id);
-    }
+
+        // ✅ kalau sudah selesai
+        if ($userExam->status === 'finished') {
+            return redirect()->route('exam.hasil', $userExam->id);
+        }
+
+        // ✅ SET started_at HANYA SEKALI (INI KUNCI TIMER)
+        if (!$userExam->started_at) {
+            $userExam->update([
+                'started_at' => now()
+            ]);
+        }
+
+        // redirect ke soal pertama
         return redirect()->route('exam.show', [
             'exams' => $exams->id,
             'bankSoal' => null
@@ -77,51 +90,109 @@ public function reportViolation(Request $request)
         
         return view('exams.hasil', compact('userExam', 'result', 'hasil'));
     }
-    public function edit(Exams $exams, BankSoal $bankSoal = null)
-    {
-        $soals = BankSoal::where('exams_id', $exams->id)
-            ->orderBy('id')
-            ->get();
+public function edit(
+    Exams $exams,
+    BankSoal $bankSoal = null,
+    ExamResultService $service
+) {
+    $userId = auth()->id();
 
-        if ($soals->isEmpty()) {
-            abort(404, 'Soal tidak ditemukan');
-        }
+    $userExam = UserExam::where('user_id', $userId)
+        ->where('exam_id', $exams->id)
+        ->firstOrFail();
 
-        // Default ke soal pertama
-        if (!$bankSoal) {
-            $bankSoal = $soals->first();
-        }
-
-        $question = $bankSoal;
-        $answers = $question->answers()->get();
-
-        $banyakSoal = $soals->count();
-
-        // Jawaban user untuk soal ini
-        $userAnswer = UserAnswer::where('user_id', auth()->id())
-            ->where('bank_soal_id', $question->id)
-            ->first();
-
-        // Semua jawaban user (untuk warna sidebar)
-        $userAnswersAll = UserAnswer::where('user_id', auth()->id())
-            ->get()
-            ->keyBy('bank_soal_id');
-
-        $userExam = UserExam::where('user_id', auth()->id())
-            ->where('exam_id', $exams->id)
-            ->first();
-
-        return view('exams.create', compact(
-            'exams',
-            'question',
-            'answers',
-            'banyakSoal',
-            'userAnswer',
-            'userAnswersAll',
-            'soals',
-            'userExam'
-        ));
+    // =====================
+    // BLOCKED
+    // =====================
+    if ($userExam->status === 'is_blocked') {
+        return redirect()->route('exam.blocked', $exams->id);
     }
+
+    // =====================
+    // SUDAH FINISH
+    // =====================
+    if ($userExam->status === 'finished') {
+        return redirect()->route('exam.hasil', $userExam->id);
+    }
+
+    // =====================
+    // SET STARTED AT
+    // =====================
+    if (!$userExam->started_at) {
+        $userExam->update([
+            'started_at' => now()
+        ]);
+    }
+
+    // =====================
+    // VALIDASI WAKTU HABIS
+    // =====================
+    $endTime = $userExam->started_at
+        ->copy()
+        ->addMinutes($exams->time);
+
+    if (now()->greaterThanOrEqualTo($endTime)) {
+
+        // hitung nilai
+        $result = $service->calculate($userExam);
+
+        // update hasil
+        $userExam->update([
+            'skor' => $result['nilai'],
+            'status' => 'finished',
+            'is_late' => true
+        ]);
+
+        return redirect()->route('exam.hasil', $userExam->id);
+    }
+
+    // =====================
+    // AMBIL SOAL
+    // =====================
+    $soals = BankSoal::where('exams_id', $exams->id)
+        ->orderBy('id')
+        ->get();
+
+    if ($soals->isEmpty()) {
+        abort(404, 'Soal tidak ditemukan');
+    }
+
+    // default soal pertama
+    if (!$bankSoal) {
+        $bankSoal = $soals->first();
+    }
+
+    $question = $bankSoal;
+
+    $answers = $question->answers()->get();
+
+    $banyakSoal = $soals->count();
+
+    // =====================
+    // JAWABAN USER
+    // =====================
+    $userAnswer = UserAnswer::where('user_exam_id', $userExam->id)
+        ->where('bank_soal_id', $question->id)
+        ->first();
+
+    $userAnswersAll = UserAnswer::where('user_exam_id', $userExam->id)
+        ->get()
+        ->keyBy('bank_soal_id');
+
+    // =====================
+    // VIEW
+    // =====================
+    return view('exams.create', compact(
+        'exams',
+        'question',
+        'answers',
+        'banyakSoal',
+        'userAnswer',
+        'userAnswersAll',
+        'soals',
+        'userExam'
+    ));
+}
 public function save(Request $request)
 {
     $request->validate([

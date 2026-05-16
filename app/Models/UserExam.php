@@ -11,10 +11,12 @@ class UserExam extends Model
         'exam_id',
         'skor',
         'status',
+        'started_at',
     ];
 
     protected $casts = [
         'soal_array' => 'array', // JSON → array
+        'started_at' => 'datetime',
     ];
 
     public function user()
