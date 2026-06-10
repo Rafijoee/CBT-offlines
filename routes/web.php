@@ -15,7 +15,7 @@ use App\Http\Controllers\Guru\NilaiController;
 use App\Http\Controllers\UserAnswerController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 Route::get('/tes', [AuthController::class, 'tes']);
@@ -67,6 +67,8 @@ Route::post('/exam/violation', [UserExamsController::class, 'reportViolation'])
 Route::get('/exam/blocked/{id}', function ($id) {
     return view('exams.blocked', ['id' => $id]);
 })->name('exam.blocked');
+Route::get('/exam/pantau/{exam}', [ExamsController::class, 'pantauExam'])
+    ->name('exam.pantau');
 
 
 

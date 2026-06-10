@@ -136,8 +136,11 @@
                                     @method('DELETE')
                                     <button class="text-red-500 hover:text-red-600 cursor-pointer" type="submit">🗑️Hapus</button>
                                 </form>
+                                <a href="{{ route('exam.pantau', $exam) }}" class="btn btn-success">
+                                    Pantau
+                                </a>
                                 <a href="{{ route('exam.download', $exam->id) }}" class="btn btn-success">
-                                    Download Paket
+                                    Download 
                                 </a>
                             </div>
                         </td>

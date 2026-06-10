@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Exams;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Models\UserExam;
+use App\Models\User;
 
 class ExamsController extends Controller
 {
@@ -28,6 +30,7 @@ class ExamsController extends Controller
      */
     public function store(Request $request)
     {
+         
         $validate_data = $request->validate([
             'mapel' => 'required',
             'soal' => 'required',
@@ -46,10 +49,45 @@ class ExamsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        //
-    }
+public function pantauExam (Exams $exam)
+{
+    $students = User::where('role', 'siswa')
+        ->where('kelas', $exam->kelas)
+        ->get();
+
+    $userExams = UserExam::where('exam_id', $exam->id)
+        ->get()
+        ->keyBy('user_id');
+
+    $monitoring = $students->map(function ($student) use ($userExams) {
+
+        $userExam = $userExams->get($student->id);
+
+        if (!$userExam) {
+            $status = 'belum';
+        } elseif ($userExam->submitted_at) {
+            $status = 'selesai';
+        } else {
+            $status = 'sedang';
+        }
+
+        return [
+            'student' => $student,
+            'status' => $status,
+            'started_at' => $userExam?->started_at,
+            'submitted_at' => $userExam?->submitted_at,
+        ];
+    });
+
+    return view('exams.pantau', [
+        'exam' => $exam,
+        'monitoring' => $monitoring,
+        'totalStudents' => $students->count(),
+        'belum' => $monitoring->where('status', 'belum')->count(),
+        'sedang' => $monitoring->where('status', 'sedang')->count(),
+        'selesai' => $monitoring->where('status', 'selesai')->count(),
+    ]);
+}
 
     /**
      * Show the form for editing the specified resource.

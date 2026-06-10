@@ -9,11 +9,11 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+        public function up(): void
     {
-        // Schema::table('exams', function (Blueprint $table) {
-        //     $table->uuid('uuid')->nullable()->after('id');
-        // });
+        Schema::table('exams', function (Blueprint $table) {
+            $table->uuid('uuid')->nullable()->after('id');
+        });
     }
 
     /**
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('exams', function (Blueprint $table) {
+        Schema::table('Exams', function (Blueprint $table) {
             //
         });
     }

@@ -22,9 +22,14 @@ class AuthController extends Controller
 
     public function authenticate(Request $request)
     {
+        
         $credentials = $request->only('email', 'password');
         if (Auth::attempt($credentials)) {
-            return redirect('/dashboard');
+            if (auth()->user()->role == 'guru') {
+                return redirect('/dashboard-guru');
+            } elseif (auth()->user()->role == 'siswa') {
+                return redirect('/dashboard');
+            }
         } else {
             return redirect('login')->with('error', 'Email atau Kata sandi salah !');
         }
