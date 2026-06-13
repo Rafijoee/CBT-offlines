@@ -11,7 +11,11 @@
                 @hasSection('navbar-subtitle')
                     @yield('navbar-subtitle')
                 @else
-                    Halo, {{ Auth::user()->name }}! Siap ujian hari ini?
+                    @if (Auth::user()->role == 'guru')
+                    Halo Guru, Selamat Datang !
+                    @elseif (Auth::user()->role == 'user')
+                    Halo, {{ Auth::user()->name }}! Selamat Datang?
+                    @endif
                 @endif
             </p>
         </div>

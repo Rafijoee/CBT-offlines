@@ -7,7 +7,7 @@
 </head>
 <body
     class="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
-    style="background-image: url('{{ asset('storage/images/background.png') }}')"
+    style="background-image: url('{{ asset('/images/background.png') }}')"
 >
 
 <div class="w-full max-w-6xl px-4">
@@ -17,7 +17,7 @@
         <!-- LEFT IMAGE -->
         <div class="hidden md:block md:w-1/2 relative"> 
             <img
-                src="{{ asset('storage/images/login.png') }}"
+                src="{{ asset('/images/login.png') }}"
                 alt="School"
                 class="absolute inset-0 w-full h-full object-cover"
             >

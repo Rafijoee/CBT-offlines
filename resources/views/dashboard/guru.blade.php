@@ -22,15 +22,23 @@
         </div>
             
         <div class="flex gap-3">
+
+            <a href="{{ route('siswa.index') }}"
+                class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg text-sm">
+                👨‍🎓 Kelola Siswa
+            </a>
+
             <button
                 @click="openModal = true"
                 class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm">
                 ➕ Buat Ujian
             </button>
 
-            <a href="{{ route('nilai.index') }}" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm">
+            <a href="{{ route('nilai.index') }}"
+                class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm">
                 📊 Lihat Nilai
             </a>
+
         </div>
     </div>
 

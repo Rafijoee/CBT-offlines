@@ -13,7 +13,7 @@
 
     <div 
         class="min-h-screen bg-cover bg-center bg-no-repeat"
-        style="background-image: url('{{ asset('storage/images/background.png') }}');"
+        style="background-image: url('{{ asset('/images/background.png') }}');"
     >
         
         {{-- Navbar --}}

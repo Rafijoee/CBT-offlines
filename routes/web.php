@@ -23,9 +23,16 @@ Route::get('login', [AuthController::class, 'login'])->name('login');
 Route::post('login', [AuthController::class, 'authenticate']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
+
 //dashboard
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/dashboard-guru', [GuruDashboardController::class, 'index'])->name('dashboard-guru');
+Route::get('/dashboard-guru/siswa', [AuthController::class, 'index'])->name('siswa.index');
+Route::get('/dashboard-guru/siswa/create', [AuthController::class, 'create'])->name('siswa.create');
+Route::post('/dashboard-guru/siswa/store', [AuthController::class, 'store'])->name('siswa.store');
+Route::get('/dashboard-guru/siswa/{siswa}/edit', [AuthController::class, 'edit'])->name('siswa.edit');
+Route::patch('/dashboard-guru/siswa/{siswa}/update', [AuthController::class, 'update'])->name('siswa.update');
+Route::delete('/dashboard-guru/siswa/{siswa}/delete', [AuthController::class, 'destroyUser'])->name('siswa.destroy');
 
 //Exams
 Route::post('/create-exams', [ExamsController::class, 'store'])->name('store-exams');
