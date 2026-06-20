@@ -31,6 +31,7 @@ public function reportViolation(Request $request)
         // Optional: simpan alasan di kolom catatan jika ada
     ]);
 
+    
     return response()->json(['success' => true]);
 }
     public function masuk(Exams $exams)
