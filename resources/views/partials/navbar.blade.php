@@ -43,9 +43,15 @@
             @hasSection('navbar-logout')
                 @yield('navbar-logout')
             @else
-                <button class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm font-semibold">
+                <a href="{{ route('logout') }}" 
+                onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm font-semibold text-white">
                     Keluar
-                </button>
+                </a>
+
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                    @csrf
+                </form>
             @endif
 
         </div>

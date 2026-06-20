@@ -22,12 +22,11 @@ class AuthController extends Controller
 
     public function authenticate(Request $request)
     {
-        
         $credentials = $request->only('email', 'password');
         if (Auth::attempt($credentials)) {
             if (auth()->user()->role == 'guru') {
                 return redirect('/dashboard-guru');
-            } elseif (auth()->user()->role == 'siswa') {
+            } elseif (auth()->user()->role == 'user') {
                 return redirect('/dashboard');
             }
         } else {
@@ -83,7 +82,7 @@ class AuthController extends Controller
             ->when($request->search, function ($query) use ($request) {
                 $query->where(function ($q) use ($request) {
                     $q->where('name', 'like', "%{$request->search}%")
-                        ->orWhere('username', 'like', "%{$request->search}%")
+                        ->orWhere('email', 'like', "%{$request->search}%")
                         ->orWhere('kelas', 'like', "%{$request->search}%");
                 });
             })
@@ -105,20 +104,28 @@ class AuthController extends Controller
      * Simpan siswa
      */
     public function store(Request $request)
+
     {
         $validated = $request->validate([
             'name' => ['required'],
-            'username' => ['required', 'unique:users,username'],
-            'password' => ['required', 'min:6'],
-            'kelas' => ['required']
         ]);
+
+        if ($request->password == null) {
+            $password = '123456';
+        } else {
+            $password = $request->password;
+        }
+
+        $email = strtolower(str_replace(' ', '', $validated['name'])) . '@gmail.com';
+        $kelas = '6';
+        dd($kelas);
 
         User::create([
             'name' => $validated['name'],
-            'username' => $validated['username'],
-            'password' => Hash::make($validated['password']),
-            'kelas' => $validated['kelas'],
-            'role' => 'siswa',
+            'email' => $email,
+            'password' => Hash::make($password),
+            'kelas' => $kelas,
+            'role' => 'user',
         ]);
 
         return redirect()
@@ -131,7 +138,7 @@ class AuthController extends Controller
      */
     public function edit(User $siswa)
     {
-        return view('users.siswa.edit', compact('siswa'));
+        return view('users.edit', compact('siswa'));
     }
 
     /**
@@ -141,17 +148,15 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required'],
-            'username' => [
+            'email' => [
                 'required',
-                'unique:users,username,' . $siswa->id
+                'unique:users,email,' . $siswa->id
             ],
-            'kelas' => ['required']
         ]);
 
         $siswa->update([
             'name' => $validated['name'],
-            'username' => $validated['username'],
-            'kelas' => $validated['kelas']
+            'email' => $validated['email'],
         ]);
 
         return redirect()

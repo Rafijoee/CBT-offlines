@@ -34,7 +34,7 @@ public function reportViolation(Request $request)
     return response()->json(['success' => true]);
 }
     public function masuk(Exams $exams)
-    {
+    {   
         $userId = auth()->id();
 
         // ❌ kalau diblokir
@@ -51,7 +51,6 @@ public function reportViolation(Request $request)
             [
                 'user_id' => $userId,
                 'exam_id' => $exams->id,
-                'exam_uuid' => $exams->uuid
             ],
             [
                 'status' => 'ongoing'
@@ -104,6 +103,7 @@ public function edit(
     // =====================
     // BLOCKED
     // =====================
+
     if ($userExam->status === 'is_blocked') {
         return redirect()->route('exam.blocked', $exams->id);
     }
@@ -140,7 +140,6 @@ public function edit(
         $userExam->update([
             'skor' => $result['nilai'],
             'status' => 'finished',
-            'is_late' => true
         ]);
 
         return redirect()->route('exam.hasil', $userExam->id);
@@ -157,9 +156,11 @@ public function edit(
         abort(404, 'Soal tidak ditemukan');
     }
 
+    $soals = $soals->shuffle($userExam->id);
+
     // default soal pertama
-    if (!$bankSoal) {
-        $bankSoal = $soals->first();
+    if (!$bankSoal || !$bankSoal->exists) {
+    $bankSoal = $soals->first();
     }
 
     $question = $bankSoal;
@@ -201,7 +202,6 @@ public function save(Request $request)
         'answer_id'    => 'nullable|exists:answers,id',
         'ragu'         => 'required|boolean'
     ]);
-
     UserAnswer::updateOrCreate(
         [
             'user_exam_id' => $request->user_exam_id,
