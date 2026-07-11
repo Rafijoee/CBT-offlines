@@ -18,6 +18,6 @@ class AccountSeeder extends Seeder
             'email' => 'admin@example.com',
             'password' => bcrypt('password'),
             'role' => 'guru',
-        ])->assignRole('admin');
+        ]);
     }
 }

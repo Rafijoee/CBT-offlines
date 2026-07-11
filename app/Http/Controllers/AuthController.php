@@ -118,7 +118,6 @@ class AuthController extends Controller
 
         $email = strtolower(str_replace(' ', '', $validated['name'])) . '@gmail.com';
         $kelas = '6';
-        dd($kelas);
 
         User::create([
             'name' => $validated['name'],
