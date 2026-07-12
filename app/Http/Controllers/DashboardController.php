@@ -18,13 +18,14 @@ class DashboardController extends Controller
         $kelas = $user->kelas;
         $idCurrent = UserExam::where('user_id', $user->id)->where('status', 'ongoing')->pluck('exam_id')->toArray();
         $idFinish = UserExam::where('user_id', $user->id)->where('status', 'finished')->pluck('exam_id')->toArray();
-        $excludedIds = array_merge($idCurrent, $idFinish);
-        // dd($exams, $idCurrent, $idFinish, $excludedIds);
+        $idlate = Exams::where('kelas', $kelas)->where('opened_time', '<', now())->pluck('id')->toArray();
+        $excludedIds = array_merge($idCurrent, $idFinish, $idlate);
 
+        $lates = Exams::where('kelas', $kelas)->whereIn('id', $idlate)->get();
         $exams = Exams::where('kelas', $kelas)->whereNotIn('id', $excludedIds)->get();
         $currents = Exams::whereIn('id', $idCurrent)->get();
         $finishs = Exams::whereIn('id', $idFinish)->get();
-        return view('dashboard.siswa', compact('exams', 'currents', 'finishs', 'exams' ));
+        return view('dashboard.siswa', compact('exams', 'currents', 'finishs', 'lates' ));
     }
 
 
