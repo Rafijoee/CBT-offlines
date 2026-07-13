@@ -104,12 +104,12 @@ $progress = $totalStudents > 0
 
                         @if($item['status'] == 'belum')
                             <span class="px-3 py-1 rounded-full bg-red-100 text-red-700">
-                                Belum
+                                Belum Mengerjakan
                             </span>
 
                         @elseif($item['status'] == 'sedang')
                             <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700">
-                                Sedang
+                                Sedang Mengerjakan
                             </span>
 
                         @else

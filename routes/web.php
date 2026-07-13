@@ -23,9 +23,6 @@ Route::get('login', [AuthController::class, 'login'])->name('login');
 Route::post('login', [AuthController::class, 'authenticate']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
-
-
-
 //role siswa
 Route::middleware(['auth', 'role:user'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -77,11 +74,6 @@ Route::post('/import/{session}/finalize', function ($sessionId) {
     return "FINALIZE LOGIC HERE";
 })->name('import.finalize');
 
-//let it
-
-//Bank Soal
-// Route::edit('/edit-bank-soal/{bankSoal}', [BankSoalController::class, 'edit'])->name('edit-bank-soal');
-// Route::delete('/delete-bank-soal/{bankSoal}', [BankSoalController::class, 'destroy'])->name('delete-bank-soal');
 
 //User Exams
 Route::get('/create-user-exams', [UserExamsController::class, 'create'])->name('create-user-exams');

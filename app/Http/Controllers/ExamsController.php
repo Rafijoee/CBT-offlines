@@ -33,13 +33,13 @@ class ExamsController extends Controller
          
         $validate_data = $request->validate([
             'mapel' => 'required',
-            'soal' => 'required',
             'time' => 'required|integer',
             'kelas' => 'required',
             'opened_time' => 'required|date',
             'closed_time' => 'required|date',
         ]);
         $validate_data['token'] = strtoupper(Str::random(6));
+        $validate_data['soal'] = 10;
         
         Exams::create($validate_data);
 
@@ -51,7 +51,7 @@ class ExamsController extends Controller
      */
 public function pantauExam (Exams $exam)
 {
-    $students = User::where('role', 'siswa')
+    $students = User::where('role', 'user')
         ->where('kelas', $exam->kelas)
         ->get();
 
@@ -62,10 +62,9 @@ public function pantauExam (Exams $exam)
     $monitoring = $students->map(function ($student) use ($userExams) {
 
         $userExam = $userExams->get($student->id);
-
         if (!$userExam) {
             $status = 'belum';
-        } elseif ($userExam->submitted_at) {
+        } elseif ($userExam->status === 'finished') {
             $status = 'selesai';
         } else {
             $status = 'sedang';

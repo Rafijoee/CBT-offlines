@@ -12,6 +12,7 @@ class UserExam extends Model
         'skor',
         'status',
         'started_at',
+        'soal_array',
     ];
 
     protected $casts = [

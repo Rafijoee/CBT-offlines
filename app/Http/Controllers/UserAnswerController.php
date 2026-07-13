@@ -73,7 +73,7 @@ class UserAnswerController extends Controller
     return response()->json(['message' => 'blocked']);
 }  
 public function uptoken (Request $request, $id)
-    {
+    {   
         $token = Exams::where('id', $id)->first()->token;
         if (strtoupper($request->token) === strtoupper($token)) {
                 return redirect()->route('exam.masuk', $id);

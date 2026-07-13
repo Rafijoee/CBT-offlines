@@ -38,7 +38,6 @@ public function reportViolation(Request $request)
     {   
         $userId = auth()->id();
 
-        // ❌ kalau diblokir
         if (UserExam::where('user_id', $userId)
             ->where('exam_id', $exams->id)
             ->where('status', 'is_blocked')
@@ -48,17 +47,23 @@ public function reportViolation(Request $request)
         }
 
         // ambil / buat data
+        $order = BankSoal::where('exams_id', $exams->id)
+            ->pluck('id')
+            ->shuffle()
+            ->values()
+            ->toArray();
+
         $userExam = UserExam::firstOrCreate(
             [
                 'user_id' => $userId,
-                'exam_id' => $exams->id,
+                'exam_id' => $exams->id
             ],
             [
+                'soal_array' => $order,
                 'status' => 'ongoing'
             ]
         );
 
-        // ✅ kalau sudah selesai
         if ($userExam->status === 'finished') {
             return redirect()->route('exam.hasil', $userExam->id);
         }
@@ -70,11 +75,15 @@ public function reportViolation(Request $request)
             ]);
         }
 
+        if (!$userExam->question_order) {
+
+
         // redirect ke soal pertama
         return redirect()->route('exam.show', [
             'exams' => $exams->id,
             'bankSoal' => null
         ]);
+    }
     }
     public function hasil(UserExam $userExam, ExamResultService $service)
     {

@@ -9,7 +9,6 @@ class UserAnswer extends Model
     protected $fillable = [
         'user_id',
         'user_exam_id',
-        'user_exam_id',
         'bank_soal_id',
         'answer_id',
         'ragu',

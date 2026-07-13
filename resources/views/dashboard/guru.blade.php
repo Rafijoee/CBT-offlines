@@ -53,7 +53,6 @@
                         <th class="p-4 text-left">Mata Pelajaran</th>
                         <th class="p-4 text-left">Kelas</th>
                         <th class="p-4 text-left">Waktu</th>
-                        <th class="p-4 text-left">Jumlah Soal</th>
                         <th class="p-4 text-left">Token</th>
                         <th class="p-4 text-left">Status</th>
                         <th class="p-4 text-center">Aksi</th>
@@ -97,9 +96,7 @@
                             @endif
                         </td>
 
-                        <td class="p-4">
-                            {{ $exam->soal }} Soal
-                        </td>
+
 
                         <td class="p-4 font-mono">
                             {{ $exam->token }}
@@ -207,9 +204,9 @@
                         type="text"
                         name="kelas"
                         id="kelas"
-                        placeholder="Contoh: X IPA 1"
+                        placeholder="Contoh: 6"
                         class="border rounded-lg p-2 w-full"
-                        z
+                        
                     >
                 </div>
 
@@ -228,20 +225,7 @@
                     >
                 </div>
 
-                <!-- JUMLAH SOAL -->
-                <div>
-                    <label for="soal" class="block text-sm font-semibold text-gray-700 mb-1">
-                        Jumlah Soal
-                    </label>
-                    <input
-                        type="number"
-                        name="soal"
-                        id="soal"
-                        placeholder="Contoh: 40"
-                        class="border rounded-lg p-2 w-full"
-                        
-                    >
-                </div>
+
 
                 <!-- OPENED TIME -->
                 <div>
