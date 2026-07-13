@@ -13,6 +13,8 @@ use App\Http\Controllers\DashboardController as Controller;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
 use App\Http\Controllers\Guru\NilaiController;
 use App\Http\Controllers\UserAnswerController;
+use App\Http\Controllers\Guru\TemplateController;
+
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -58,15 +60,13 @@ Route::middleware(['auth', 'role:guru'])->group(function () {
     Route::patch('/update-bank-soal/{bankSoal}', [BankSoalController::class, 'update'])->name('update-bank-soal');
     Route::get('/create-bank-soal/{exams}', [BankSoalController::class, 'create'])->name('create-bank-soal');
     Route::post('/submit-bank-soal/{exams}', [BankSoalController::class, 'submitBank'])->name('submit-bank-soal');
-    Route::get('/exam/{id}/preview', [BankSoalController::class, 'preview'])
-        ->name('bank-soal.preview');
+    Route::get('/exam/{id}/preview', [BankSoalController::class, 'preview'])->name('bank-soal.preview');
     Route::get('/nilai', [NilaiController::class, 'index'])->name('nilai.index');
     Route::get('/exam/{userExam}/detail', [NilaiController::class, 'detail'])->name('exam.detail');
-    Route::get('/nilai/download-result', [NilaiController::class, 'downloadResult'])
-        ->name('nilai.download-result');
+    Route::get('/nilai/download-result', [NilaiController::class, 'downloadResult'])->name('nilai.download-result');
     Route::post('/sync/user-exam', [NilaiController::class, 'syncUserExam']);
-    Route::post('/sync-server', [NilaiController::class, 'syncToServer'])
-        ->name('sync.server');
+    Route::post('/sync-server', [NilaiController::class, 'syncToServer'])->name('sync.server');
+    Route::get('/template/download', [TemplateController::class, 'download'])->name('template.download');
 });
 
 

@@ -121,12 +121,12 @@
                     @php
                         $jawaban = $userAnswersAll[$s->id] ?? null;
 
-                        if (!$jawaban || !$jawaban->answer_id) {
-                            $color = 'bg-gray-200';
-                        } elseif ($jawaban->ragu) {
+                        if ($jawaban && $jawaban->ragu) {
                             $color = 'bg-yellow-400';
-                        } else {
+                        } elseif ($jawaban && $jawaban->answer_id) {
                             $color = 'bg-green-500 text-white';
+                        } else {
+                            $color = 'bg-gray-200';
                         }
                     @endphp
 
@@ -236,22 +236,22 @@ document.addEventListener("DOMContentLoaded", function() {
     const form = document.getElementById('answerForm');
 
     async function saveAnswer() {
-        if (!form) return;
-
         const formData = new FormData(form);
 
-        try {
-            await fetch("{{ route('exam.save') }}", {
-                method: "POST",
-                headers: {
-                    "X-CSRF-TOKEN": csrfToken,
-                    "Accept": "application/json"
-                },
-                body: formData
-            });
-        } catch (error) {
-            console.error("Save error:", error);
-        }
+        const response = await fetch("{{ route('exam.save') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": csrfToken,
+                "Accept": "application/json"
+            },
+            body: formData
+        });
+
+        const result = await response.json();
+
+        console.log(response.status, result);
+
+        return response.ok;
     }
 
     // 🔥 NAVIGASI (fix utama)

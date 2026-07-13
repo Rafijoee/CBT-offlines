@@ -60,7 +60,7 @@
         <div class="grid grid-cols-3 gap-4 w-full">
 
             <button
-                onclick="document.getElementById('downloadTemplate').showModal()"
+                onclick="window.location='{{ route('template.download') }}'"
                 class="w-full px-4 py-3 bg-green-600 text-white rounded-lg text-center">
                 ➕ Download Template
             </button>
@@ -420,8 +420,7 @@
 <script>
 document.querySelectorAll('dialog').forEach(dialog => {
     dialog.addEventListener('mousedown', (e) => {
-        // Deteksi jika yang diklik adalah elemen <dialog> itu sendiri (background/backdrop)
-        // bukan isi di dalamnya
+
         if (e.target === dialog) {
             dialog.close();
         }

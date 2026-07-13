@@ -158,22 +158,25 @@ public function edit(
     // =====================
     // AMBIL SOAL
     // =====================
-    $soals = BankSoal::where('exams_id', $exams->id)
-        ->orderBy('id')
-        ->get();
-
+    $order = $userExam->soal_array;
+    $soals = BankSoal::whereIn('id', $order)
+        ->get()
+        ->sortBy(fn($q) => array_search($q->id, $order))
+        ->values();
     if ($soals->isEmpty()) {
         abort(404, 'Soal tidak ditemukan');
     }
 
-    $soals = $soals->shuffle($userExam->id);
-
     // default soal pertama
     if (!$bankSoal || !$bankSoal->exists) {
-    $bankSoal = $soals->first();
-    }
+        $question = $soals->first();
+    } else {
+        $question = $soals->firstWhere('id', $bankSoal->id);
 
-    $question = $bankSoal;
+        if (!$question) {
+            abort(404);
+        }
+    }
 
     $answers = $question->answers()->get();
 
